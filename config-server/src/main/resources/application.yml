@@ -1,0 +1,13 @@
+spring:
+  application:
+   name: config-server
+  cloud:
+   config:
+    server:
+      git:
+        uri: https://github.com/SedatMammadly/financialTech-config-repo
+        default-label: main
+        search-paths: /
+
+server:
+  port: 8888
