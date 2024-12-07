@@ -18,4 +18,11 @@ public class GlobalExceptionHandler {
         exception.getBindingResult().getFieldErrors().forEach(item->errors.put(item.getField(), item.getDefaultMessage()));
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
     }
+
+    @ExceptionHandler(ApplicationException.class)
+    public ResponseEntity<Object>handleApplicationException(ApplicationException exception){
+        Map<String,String> errors = new HashMap<>();
+        errors.put("message", exception.getMessage());
+        return ResponseEntity.status(exception.getExceptions().getHttpStatus()).body(errors);
+    }
 }
