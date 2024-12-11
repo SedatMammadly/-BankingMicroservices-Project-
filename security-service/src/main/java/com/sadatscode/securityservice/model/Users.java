@@ -35,8 +35,6 @@ public class Users {
     @Column(nullable = false)
     Role role;
 
-    Boolean isEnabled = true;
-
     @CreationTimestamp
     @DateTimeFormat(pattern = "dd.MM.yyyy")
     LocalDateTime createdAt;

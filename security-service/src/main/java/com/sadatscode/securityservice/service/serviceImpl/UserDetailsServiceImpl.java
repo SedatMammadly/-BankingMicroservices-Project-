@@ -1,4 +1,4 @@
-package com.sadatscode.securityservice.service;
+package com.sadatscode.securityservice.service.serviceImpl;
 
 import com.sadatscode.securityservice.model.CustomUserDetails;
 import com.sadatscode.securityservice.model.Users;

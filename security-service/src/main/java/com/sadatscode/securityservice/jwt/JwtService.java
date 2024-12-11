@@ -30,6 +30,8 @@ public class JwtService {
     @Value("${secret.public-key}")
     private String publicKey;
 
+    // Rsa private key must be pkcs8 format//
+
     public String generateAccessToken(String email) {
         Map<String, Object> claims = new HashMap<String, Object>();
         return createToken(claims, email, accessTokenExpiredTime);
@@ -47,20 +49,20 @@ public class JwtService {
                 .setSubject(email)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + tokenExpiredTime))
-                .signWith(SignatureAlgorithm.RS512, generateJwtKeyEncryption(privateKey))
+                .signWith(generateJwtKeyEncryption(), SignatureAlgorithm.RS512)
                 .compact();
     }
 
-    private PrivateKey generateJwtKeyEncryption(String privateKey) throws Exception {
+    private PrivateKey generateJwtKeyEncryption() throws Exception {
         KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-        byte[] keyBytes = Base64.decodeBase64(privateKey);
+        byte[] keyBytes = Base64.decodeBase64(privateKey.replaceAll("\\s+", ""));
         PKCS8EncodedKeySpec pkcs8EncodedKeySpec = new PKCS8EncodedKeySpec(keyBytes);
         return keyFactory.generatePrivate(pkcs8EncodedKeySpec);
     }
 
-    private PublicKey generateJwtKeyDecryption(String publicKey) throws Exception {
+    private PublicKey generateJwtKeyDecryption() throws Exception {
         KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-        byte[] keyBytes = Base64.decodeBase64(this.publicKey);
+        byte[] keyBytes = Base64.decodeBase64(publicKey.replaceAll("\\s+", ""));
         X509EncodedKeySpec x509EncodedKeySpec = new X509EncodedKeySpec(keyBytes);
         return keyFactory.generatePublic(x509EncodedKeySpec);
     }
@@ -79,8 +81,8 @@ public class JwtService {
     }
 
     public Boolean isTokenValid(String jwtToken, UserDetails userDetails) {
-      String username = extractUserName(jwtToken);
-      return (username.equals(userDetails.getUsername()) && isTokenExpired(jwtToken));
+        String username = extractUserName(jwtToken);
+        return (username.equals(userDetails.getUsername()) && !isTokenExpired(jwtToken));
     }
 
     private <T> T extractClaim(String jwtToken, Function<Claims, T> claimsResolver) {
@@ -90,8 +92,11 @@ public class JwtService {
 
     @SneakyThrows
     private Claims extractAllClaims(String jwtToken) {
-        return Jwts.parser()
-                .setSigningKey(generateJwtKeyDecryption(publicKey))
-                .parseClaimsJws(jwtToken).getBody();
+        return Jwts
+                .parserBuilder()
+                .setSigningKey(generateJwtKeyDecryption())
+                .build()
+                .parseClaimsJws(jwtToken)
+                .getBody();
     }
 }
