@@ -13,8 +13,21 @@ services:
     networks:
       - finTech
 
+  bank-redis:
+    image: docker.io/bitnami/redis
+    container_name: redis_bank
+    ports:
+      - "6380:6379"
+    environment:
+      - REDIS_PASSWORD=redis_bank_pass
+      - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
+    volumes:
+      - redis-bank-data:/bitnami/redis/data
+    networks:
+      - finTech
 volumes:
   dataFinTechSecure: {}
+  redis-bank-data: {}
 networks:
   finTech:
-   driver: bridge
+    driver: bridge
